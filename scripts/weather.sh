@@ -3,6 +3,15 @@
 CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$CURRENT_DIR/helpers.sh"
 
+#get_myip_api="https://api64.ipify.org?format=json"
+get_myip_info_api="http://ip-api.com/json"
+
+get_location_city() {
+    city=$(curl -s $get_myip_info_api | jq .city)
+
+    echo $city | sed 's/"//g'
+}
+
 get_weather() {
     local location=$(get_tmux_option "@tmux-weather-location")
     local format=$(get_tmux_option "@tmux-weather-format" 1)
@@ -10,6 +19,10 @@ get_weather() {
 
     if [ "$units" != "m" ] && [ "$units" != "u" ]; then
         units="m"
+    fi
+
+    if [[ "$location" = "" ]]; then
+        location=$(get_location_city)
     fi
 
     res=$(curl -s "https://wttr.in/$location?$units&format=$format" |
